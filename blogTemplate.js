@@ -79,19 +79,19 @@ function generateBlogTemplate(updatedHTML, toc = "", uploader = "System") {
       justify-content: flex-start;
     }
     .interaction-btn {
-      background: #fff;
-      border: 1.4px solid #d5d8dd;
-      padding: 10px 28px;
+      background: #000000;
+      border: 1.4px solid #ffffff;
+      padding: 7px 65px;
       border-radius: 999px;
       cursor: pointer;
-      font-size: 19px;
+      font-size: 16px;
       font-family: 'Source Sans Pro', sans-serif;
       display: flex;
       align-items: center;
       gap: 13px;
       font-weight: 600;
       letter-spacing: 0.01em;
-      color: #232427;
+      color: #ffffffff;
       transition:
           background 0.14s,
           color 0.16s,
@@ -121,16 +121,16 @@ function generateBlogTemplate(updatedHTML, toc = "", uploader = "System") {
     /* Share Popup */
     .share-popup {
       position: absolute;
-      top: -50px;
-      right: 0;
-      background: #fff;
+      top: -44px;
+      right: 39px;
+      background: #ffffff;
       border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.11);
+      border-radius: 50px;
+      padding: 0px;
+      box-shadow: 0 0px 12px rgba(0 0 0 / 50%);
       display: none;
       z-index: 1000;
-      min-width: 120px;
+      min-width: 100px;
     }
     .share-popup.show { display: block; }
     .share-popup button {
@@ -141,7 +141,7 @@ function generateBlogTemplate(updatedHTML, toc = "", uploader = "System") {
       border-radius: 4px;
       font-size: 14px;
       width: 100%;
-      text-align: left;
+      text-align: center;
     }
     .share-popup button:hover { background: #f5f5f5; }
     .custom-toast {
@@ -151,8 +151,8 @@ function generateBlogTemplate(updatedHTML, toc = "", uploader = "System") {
       transform: translateX(-50%) scale(0.97);
       background: #222;
       color: #fff;
-      padding: 14px 26px;
-      border-radius: 6px;
+      padding: 8px 12px;
+      border-radius: 4px;
       font-size: 18px;
       font-family: 'Source Sans Pro', sans-serif;
       font-weight: 600;
