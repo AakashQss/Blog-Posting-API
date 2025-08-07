@@ -298,7 +298,7 @@ async function imageUrlToBase64(imageUrl) {
   }
 }
 
-async function upsertBlogInOdoo(title, html, bannerBase64 = null) {
+async function upsertBlogInOdoo(title, html, bannerBase64 = null, blogId) {
   console.log("🚀 Starting Odoo upload for:", title);
   console.log("📦 Banner base64 provided:", !!bannerBase64);
   return new Promise((resolve, reject) => {
@@ -332,7 +332,7 @@ async function upsertBlogInOdoo(title, html, bannerBase64 = null) {
             const blogData = {
               name: title,
               content: html,
-              blog_id: ODOO_BLOG_ID,
+              blog_id: blogId,
               website_published: false,
             };
 
@@ -468,6 +468,11 @@ app.post("/upload-html-blog", async (req, res) => {
   console.log("=".repeat(50));
   try {
     const html = req.body.html;
+    // Get blog_id from frontend, fallback to default if missing
+    const blogIdFromFrontend = req.body.blog_id && Number(req.body.blog_id);
+    const useBlogId = (blogIdFromFrontend && !isNaN(blogIdFromFrontend))
+     ? blogIdFromFrontend
+     : ODOO_BLOG_ID;
     const apiKey = req.headers["x-api-key"];
     console.log("📝 HTML content length:", html?.length || 0);
     console.log("🔑 API Key provided:", !!apiKey);
@@ -520,7 +525,7 @@ if (bannerUrl) {
     console.log("📋 TOC generated, entries:", (toc.match(/<li/g) || []).length);
     const styledHTML = generateBlogTemplate(updatedHTML, toc, uploader);
     console.log("🎨 Styled HTML generated, length:", styledHTML.length);
-    const blog_id = await upsertBlogInOdoo(title, styledHTML, bannerBase64);
+    const blog_id = await upsertBlogInOdoo(title, styledHTML, bannerBase64, useBlogId);
     logUpload(title, blog_id, uploader);
     console.log("🎉 SUCCESS! Blog uploaded with ID:", blog_id);
     res.json({
@@ -574,7 +579,7 @@ app.post("/upload-docx-blog", upload.single("file"), async (req, res) => {
     const { html: updatedHTML, toc } = generateTOC(processedImagesHTML);
     fs.unlinkSync(filePath);
     const styledHTML = generateBlogTemplate(updatedHTML, toc, "DOCX Upload");
-    const blog_id = await upsertBlogInOdoo(title, styledHTML, bannerBase64);
+    const blog_id = await upsertBlogInOdoo(title, styledHTML, bannerBase64, useBlogId);
     res.json({ message: "DOCX blog uploaded to Odoo", blog_id, title });
   } catch (err) {
     res.status(500).json({ error: "Upload failed", details: err.message });
