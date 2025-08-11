@@ -7,11 +7,8 @@ const xmlrpc = require("xmlrpc");
 const path = require("path");
 const cheerio = require("cheerio");
 const axios = require("axios");
-const sharp = require("sharp"); // 🆕 FAST image processing
-
-// Import the blog template generator
+const sharp = require("sharp"); 
 const { generateBlogTemplate } = require("./blogTemplate");
-
 const app = express();
 const PORT = 8000;
 
@@ -20,14 +17,14 @@ app.use(express.json());
 
 const upload = multer({ dest: "uploads/" });
 
-// Odoo connection config
+
 const ODOO_URL = "https://hello-store.odoo.com/";
 const ODOO_DB = "hello-store";
 const ODOO_USERNAME = "aakash.sharma.qss@gmail.com";
 const ODOO_PASSWORD = "testingapiodoo";
 const ODOO_BLOG_ID = 1;
 
-// Load API keys from JSON
+
 const keysFile = path.join(__dirname, "auth_keys.json");
 let AUTH_KEYS = {};
 try {
@@ -36,7 +33,7 @@ try {
   console.error("Failed to load auth_keys.json:", err.message);
 }
 
-// Utility functions
+
 function cleanBlogTitle(raw) {
   if (!raw) return "Untitled";
   let clean = raw.replace(/<br\s*\/?>/gi, " ")
@@ -49,14 +46,13 @@ function removeH1FromContent(html) {
   return html.replace(/<h1[^>]*>.*?<\/h1>/i, "");
 }
 
-// IMPROVED: Only remove SurferSEO overlay, not normal blog fields
+
 function removeSurferEditorUIMarkup(html) {
   const $ = cheerio.load(html);
 
-  // 1. Remove any block/div that contains only SurferSEO UI BUT DOES NOT contain <img> tags
   $("div, section, form").each(function () {
     if ($(this).find('img').length > 0) {
-      return; // Skip removal if it contains images
+      return;
     }
     const blockText = $(this).text().replace(/\s+/g, ' ').trim();
     if (
@@ -68,7 +64,6 @@ function removeSurferEditorUIMarkup(html) {
     }
   });
 
-  // 2. Remove any input or textarea with alt/desc placeholder
   $("input, textarea").each(function () {
     const ph = ($(this).attr('placeholder') || '').toLowerCase();
     if (ph.includes('alt text') || ph.includes('describe') || ph.includes('image you')) {
@@ -76,7 +71,6 @@ function removeSurferEditorUIMarkup(html) {
     }
   });
 
-  // 3. Remove overlays that are spans or paragraphs with only helper text
   $("span, p, label, button").each(function () {
     const t = $(this).text().toLowerCase();
     if (
@@ -91,7 +85,6 @@ function removeSurferEditorUIMarkup(html) {
     }
   });
 
-  // 4. Remove any <svg> (icon), trash, or known button with 'delete' or '🗑'
   $("svg, button, [aria-label]").each(function () {
     const aria = ($(this).attr('aria-label') || '').toLowerCase();
     if (
@@ -106,18 +99,15 @@ function removeSurferEditorUIMarkup(html) {
   return $.html();
 }
 
-// 🆕 Clean up +, dots, and symbol artifacts around tables, but NEVER touch images
+
 function cleanTableMarkup(html) {
   const $ = cheerio.load(html);
 
-  // Remove symbols before and after each table, only if element doesn't contain <img>
   $('table').each(function () {
     const table = $(this);
-    // Remove previous sibling nodes if they're just symbols and don't have images
     let prev = table.prev();
     while (prev.length && (prev.is('p') || prev.is('div') || prev.get(0).type === 'text')) {
       const text = prev.text().trim();
-      // Only remove if no images are contained
       if (
         /^[\+\.\s\-\*\u2022\u2023\u25E6\u2043\u2219]*$/.test(text) &&
         text.length < 8 &&
@@ -130,7 +120,6 @@ function cleanTableMarkup(html) {
         break;
       }
     }
-    // Remove next sibling nodes if they're just symbols and don't have images
     let next = table.next();
     while (next.length && (next.is('p') || next.is('div') || next.get(0).type === 'text')) {
       const text = next.text().trim();
@@ -147,7 +136,6 @@ function cleanTableMarkup(html) {
       }
     }
   });
-  // Remove standalone paragraphs/divs with just symbols and no <img>
   $('p, div').each(function () {
     const text = $(this).text().trim();
     if (
@@ -158,19 +146,18 @@ function cleanTableMarkup(html) {
       $(this).remove();
     }
   });
-  // Remove common HTML entities that are just symbols
   let cleanedHtml = $.html();
   cleanedHtml = cleanedHtml
     .replace(/&plus;/gi, '')
     .replace(/&#43;/g, '')
-    .replace(/&#8226;/g, '') // bullet
+    .replace(/&#8226;/g, '')
     .replace(/&bull;/g, '')
     .replace(/&hellip;/g, '')
     .replace(/&#8230;/g, '');
   return cleanedHtml;
 }
 
-// 🆕 Process all inline images (not banner!)
+
 async function processInlineImages(html) {
   const $ = cheerio.load(html);
   const images = $("img");
@@ -228,7 +215,6 @@ function extractBanner(html) {
   const $ = cheerio.load(html);
   let bannerUrl = null;
 
-  // Find the first H1 element
   const firstH1 = $("h1").first();
 
   if (firstH1.length === 0) {
@@ -236,7 +222,6 @@ function extractBanner(html) {
     return { bannerUrl: null, cleanedHtml: html };
   }
 
-  // Find the first image immediately after H1
   let bannerImg = null;
   let currentElement = firstH1.next();
 
@@ -257,9 +242,7 @@ function extractBanner(html) {
 
   if (bannerImg && bannerImg.length > 0) {
     bannerUrl = bannerImg.attr("src");
-    // Remove ALL images that match the banner (even if base64 strings have spaces etc)
     if (/^data:image\/[^;]+;base64,/.test(bannerUrl)) {
-      // It’s a base64 image
       const b64data = bannerUrl.split(",")[1].replace(/\s+/g,"");
       $('img').each(function() {
         const src = ($(this).attr('src')||'').replace(/\s+/g,"");
@@ -268,7 +251,6 @@ function extractBanner(html) {
         }
       });
     } else {
-      // Normal img
       $(`img[src="${bannerUrl}"]`).remove();
     }
     console.log("✅ Banner image(s) removed from content");
@@ -278,7 +260,6 @@ function extractBanner(html) {
 
   return { bannerUrl, cleanedHtml: $.html() };
 }
-
 
 async function imageUrlToBase64(imageUrl) {
   console.log("⬇️ Attempting to download image:", imageUrl);
@@ -343,7 +324,6 @@ async function upsertBlogInOdoo(title, html, bannerBase64 = null, blogId) {
               });
               console.log("🖼️ Added banner image to blog cover_properties");
             } else {
-              // Explicitly clear the banner if no image detected
               blogData.cover_properties = "{}";
               console.log("🧹 Removed banner image from cover_properties");
             }
@@ -421,7 +401,43 @@ function logUpload(title, blog_id, uploader) {
   }
 }
 
-// API Routes
+
+app.get("/get-blog-categories", async (req, res) => {
+  try {
+    const apiKey = req.headers["x-api-key"];
+    if (!apiKey || !AUTH_KEYS[apiKey]) {
+      return res.status(401).json({ error: "Invalid or missing API key" });
+    }
+    const common = xmlrpc.createClient({ url: `${ODOO_URL}/xmlrpc/2/common` });
+    const object = xmlrpc.createClient({ url: `${ODOO_URL}/xmlrpc/2/object` });
+
+    common.methodCall(
+      "authenticate",
+      [ODOO_DB, ODOO_USERNAME, ODOO_PASSWORD, {}],
+      (err, uid) => {
+        if (err || !uid) {
+          return res.status(500).json({ error: "Authentication failed" });
+        }
+        object.methodCall(
+          "execute_kw",
+          [
+            ODOO_DB, uid, ODOO_PASSWORD,
+            "blog.blog", "search_read",
+            [[], ["id", "name"]],
+          ],
+          (err2, result) => {
+            if (err2) return res.status(500).json({ error: "Failed to fetch categories" });
+            res.json({ categories: result });
+          }
+        );
+      }
+    );
+  } catch (err) {
+    res.status(500).json({ error: "Unexpected error", details: err.message });
+  }
+});
+
+
 app.get("/", (req, res) => {
   res.send("Odoo Blog Node API is running 🚀");
 });
@@ -468,7 +484,6 @@ app.post("/upload-html-blog", async (req, res) => {
   console.log("=".repeat(50));
   try {
     const html = req.body.html;
-    // Get blog_id from frontend, fallback to default if missing
     const blogIdFromFrontend = req.body.blog_id && Number(req.body.blog_id);
     const useBlogId = (blogIdFromFrontend && !isNaN(blogIdFromFrontend))
      ? blogIdFromFrontend
@@ -487,39 +502,34 @@ app.post("/upload-html-blog", async (req, res) => {
     console.log("📰 Blog title:", title);
     const contentHTML = removeH1FromContent(html);
     console.log("📝 Content after H1 removal length:", contentHTML.length);
-    // --- BANNER IMAGE SECTION ---
+    
     const { bannerUrl, cleanedHtml } = extractBanner(contentHTML);
     let bannerBase64 = null;
-if (bannerUrl) {
-  if (/^https?:/i.test(bannerUrl)) {
-    try {
-      bannerBase64 = await imageUrlToBase64(bannerUrl);
-      console.log("✅ Banner image processed successfully from URL");
-    } catch (e) {
-      console.error("❌ Failed to fetch/convert banner image:", e.message);
-    }
-  } else if (/^data:image\/[^;]+;base64,/.test(bannerUrl)) {
-    // It's already a base64 data URL
-    const match = bannerUrl.match(/^data:image\/[^;]+;base64,(.+)$/);
-    if (match) {
-      bannerBase64 = match[1];
-      console.log("✅ Banner image extracted from base64 data URL");
+    if (bannerUrl) {
+      if (/^https?:/i.test(bannerUrl)) {
+        try {
+          bannerBase64 = await imageUrlToBase64(bannerUrl);
+          console.log("✅ Banner image processed successfully from URL");
+        } catch (e) {
+          console.error("❌ Failed to fetch/convert banner image:", e.message);
+        }
+      } else if (/^data:image\/[^;]+;base64,/.test(bannerUrl)) {
+        const match = bannerUrl.match(/^data:image\/[^;]+;base64,(.+)$/);
+        if (match) {
+          bannerBase64 = match[1];
+          console.log("✅ Banner image extracted from base64 data URL");
+        } else {
+          console.log("⚠️ Failed to extract base64 from data URL for banner");
+        }
+      } else {
+        console.log("⚠️ Banner URL is not HTTP/HTTPS or base64 data URL:", bannerUrl);
+      }
     } else {
-      console.log("⚠️ Failed to extract base64 from data URL for banner");
+      console.log("ℹ️ No banner URL found");
     }
-  } else {
-    console.log("⚠️ Banner URL is not HTTP/HTTPS or base64 data URL:", bannerUrl);
-  }
-} else {
-  console.log("ℹ️ No banner URL found");
-}
 
-
-    // 👉 Clean the Surfer Editor UI markup
     const cleanedHtmlNoUI = removeSurferEditorUIMarkup(cleanedHtml);
-    // 🆕 Clean symbols and dots around tables! (should NOT remove images)
     const tableCleanedHtml = cleanTableMarkup(cleanedHtmlNoUI);
-    // 🆕 Process inline images (not banner!) AFTER table cleaning
     const processedImagesHTML = await processInlineImages(tableCleanedHtml);
     const { html: updatedHTML, toc } = generateTOC(processedImagesHTML);
     console.log("📋 TOC generated, entries:", (toc.match(/<li/g) || []).length);
@@ -541,9 +551,12 @@ if (bannerUrl) {
   }
 });
 
+
 app.post("/upload-docx-blog", upload.single("file"), async (req, res) => {
   const filePath = req.file.path;
   try {
+    const blogIdFromFrontend = req.body.blog_id && Number(req.body.blog_id);
+    const useBlogId = (blogIdFromFrontend && !isNaN(blogIdFromFrontend)) ? blogIdFromFrontend : ODOO_BLOG_ID;
     const options = {
       styleMap: [
         "p[style-name='Heading 1'] => h1",
@@ -560,7 +573,7 @@ app.post("/upload-docx-blog", upload.single("file"), async (req, res) => {
     const rawTitle = rawText.value.split("\n").find(line => line.trim()) || "Untitled";
     const title = cleanBlogTitle(rawTitle);
     const contentWithoutH1 = removeH1FromContent(html);
-    // --- BANNER IMAGE SECTION ---
+
     const { bannerUrl, cleanedHtml } = extractBanner(contentWithoutH1);
     let bannerBase64 = null;
     if (bannerUrl && /^https?:/i.test(bannerUrl)) {
@@ -570,11 +583,9 @@ app.post("/upload-docx-blog", upload.single("file"), async (req, res) => {
         console.error("Failed to fetch/convert banner image:", e && e.message);
       }
     }
-    // 👉 Clean the Surfer Editor UI markup for docx, too
+
     const cleanedHtmlNoUI = removeSurferEditorUIMarkup(cleanedHtml);
-    // 🆕 Clean symbols and dots around tables! (should NOT remove images)
     const tableCleanedHtml = cleanTableMarkup(cleanedHtmlNoUI);
-    // 🆕 Process inline images (not banner!) AFTER table cleaning
     const processedImagesHTML = await processInlineImages(tableCleanedHtml);
     const { html: updatedHTML, toc } = generateTOC(processedImagesHTML);
     fs.unlinkSync(filePath);
@@ -586,12 +597,11 @@ app.post("/upload-docx-blog", upload.single("file"), async (req, res) => {
   }
 });
 
-// Add error handling middleware
 app.use((err, req, res, next) => {
   console.error("🚨 UNCAUGHT ERROR:", err);
   res.status(500).json({ error: "Internal server error", details: err.message });
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running at https://walleye-allowing-stingray.ngrok-free.app`);
+  console.log(`✅ Server running at http://localhost:8000`);
 });
