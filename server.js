@@ -20,8 +20,8 @@ const upload = multer({ dest: "uploads/" });
 
 const ODOO_URL = "https://hello-store.odoo.com/";
 const ODOO_DB = "hello-store";
-const ODOO_USERNAME = "aakash.sharma.qss@gmail.com";
-const ODOO_PASSWORD = "testingapiodoo";
+const ODOO_USERNAME = "username@gmail.com";
+const ODOO_PASSWORD = "odoo_password";
 const ODOO_BLOG_ID = 1;
 
 
