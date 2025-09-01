@@ -17,13 +17,11 @@ app.use(express.json());
 
 const upload = multer({ dest: "uploads/" });
 
-
-const ODOO_URL = "https://www.advanttechnologies.com";
-const ODOO_DB = "advantech-main";
-const ODOO_USERNAME = "pankaj@advanttechnologies.com";
-const ODOO_PASSWORD = "!fawZ16£7sIV";
-const ODOO_BLOG_ID = 134;
-
+const ODOO_URL = "https://hello-store.odoo.com/";
+const ODOO_DB = "hello-store";
+const ODOO_USERNAME = "aakash.sharma.qss@gmail.com";
+const ODOO_PASSWORD = "testingapiodoo";
+const ODOO_BLOG_ID = 1;
 
 const keysFile = path.join(__dirname, "auth_keys.json");
 let AUTH_KEYS = {};
