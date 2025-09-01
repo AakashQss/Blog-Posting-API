@@ -18,11 +18,11 @@ app.use(express.json());
 const upload = multer({ dest: "uploads/" });
 
 
-const ODOO_URL = "https://hello-store.odoo.com/";
-const ODOO_DB = "hello-store";
-const ODOO_USERNAME = "username@gmail.com";
-const ODOO_PASSWORD = "odoo_password";
-const ODOO_BLOG_ID = 1;
+const ODOO_URL = "https://www.advanttechnologies.com";
+const ODOO_DB = "advantech-main";
+const ODOO_USERNAME = "pankaj@advanttechnologies.com";
+const ODOO_PASSWORD = "!fawZ16£7sIV";
+const ODOO_BLOG_ID = 134;
 
 
 const keysFile = path.join(__dirname, "auth_keys.json");
@@ -175,15 +175,15 @@ async function processInlineImages(html) {
           headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" }
         });
         const resizedBuffer = await sharp(response.data)
-          .resize(1920, 1080, {
-            fit: 'cover',
-            position: 'center'
+          .resize({
+            width: 860,
+            withoutEnlargement: true
           })
-          .jpeg({ quality: 85 })
+          .jpeg({ quality: 90 })
           .toBuffer();
         const base64 = resizedBuffer.toString('base64');
         img.attr("src", `data:image/jpeg;base64,${base64}`);
-        img.attr("style", "width: 860px; height: auto; max-width: 100%; display: block; margin: 20px auto;");
+        img.attr("style", "width: 100%; height: auto; display: block; margin: 20px auto;");
         console.log(`✅ Processed image ${i + 1} successfully`);
       } catch (error) {
         console.error(`❌ Failed to process image ${i + 1}:`, error.message);
