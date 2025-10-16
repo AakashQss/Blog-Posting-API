@@ -17,8 +17,8 @@ app.use(express.json());
 
 const upload = multer({ dest: "uploads/" });
 
-const ODOO_URL = "https://hello-store.odoo.com/";
-const ODOO_DB = "hello-store";
+const ODOO_URL = "https://my-shop39.odoo.com/";
+const ODOO_DB = "my-shop39";
 const ODOO_USERNAME = "aakash.sharma.qss@gmail.com";
 const ODOO_PASSWORD = "testingapiodoo";
 const ODOO_BLOG_ID = 1;
@@ -69,19 +69,24 @@ function removeSurferEditorUIMarkup(html) {
     }
   });
 
-  $("span, p, label, button").each(function () {
-    const t = $(this).text().toLowerCase();
+// FIXED VERSION - Only remove UI elements, not content
+$("span, p, label, button").each(function () {
+  const t = $(this).text().trim();
+  // Only remove if it's a SHORT text snippet that EXACTLY matches UI patterns
+  if (t.length < 100) {  // Content paragraphs are usually longer
+    const lowerText = t.toLowerCase();
     if (
-      t.includes('add image alt text') ||
-      t.includes('describe the image') ||
-      t.includes('add from pixabay') ||
-      t.includes('upload') ||
-      t.includes('clear alt text') ||
-      t.includes('drag and drop an image here')
+      lowerText === 'add image alt text' ||
+      lowerText === 'describe the image' ||
+      lowerText === 'add from pixabay' ||
+      lowerText === 'upload' ||  // Only exact match "Upload" button text
+      lowerText === 'clear alt text' ||
+      lowerText.includes('drag and drop an image here')
     ) {
       $(this).remove();
     }
-  });
+  }
+});
 
   $("svg, button, [aria-label]").each(function () {
     const aria = ($(this).attr('aria-label') || '').toLowerCase();
