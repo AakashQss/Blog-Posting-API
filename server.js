@@ -17,13 +17,11 @@ app.use(express.json());
 
 const upload = multer({ dest: "uploads/" });
 
-
-const ODOO_URL = "https://www.advanttechnologies.com";
-const ODOO_DB = "advantech-main";
-const ODOO_USERNAME = "pankaj@advanttechnologies.com";
-const ODOO_PASSWORD = "!fawZ16£7sIV";
-const ODOO_BLOG_ID = 134;
-
+const ODOO_URL = "https://my-shop39.odoo.com/";
+const ODOO_DB = "my-shop39";
+const ODOO_USERNAME = "aakash.sharma.qss@gmail.com";
+const ODOO_PASSWORD = "testingapiodoo";
+const ODOO_BLOG_ID = 1;
 
 const keysFile = path.join(__dirname, "auth_keys.json");
 let AUTH_KEYS = {};
@@ -71,24 +69,24 @@ function removeSurferEditorUIMarkup(html) {
     }
   });
 
-  // FIXED VERSION - Only remove UI elements, not content
-  $("span, p, label, button").each(function () {
-    const t = $(this).text().trim();
-    // Only remove if it's a SHORT text snippet that EXACTLY matches UI patterns
-    if (t.length < 100) {  // Content paragraphs are usually longer
-      const lowerText = t.toLowerCase();
-      if (
-        lowerText === 'add image alt text' ||
-        lowerText === 'describe the image' ||
-        lowerText === 'add from pixabay' ||
-        lowerText === 'upload' ||  // Only exact match "Upload" button text
-        lowerText === 'clear alt text' ||
-        lowerText.includes('drag and drop an image here')
-      ) {
-        $(this).remove();
-      }
+// FIXED VERSION - Only remove UI elements, not content
+$("span, p, label, button").each(function () {
+  const t = $(this).text().trim();
+  // Only remove if it's a SHORT text snippet that EXACTLY matches UI patterns
+  if (t.length < 100) {  // Content paragraphs are usually longer
+    const lowerText = t.toLowerCase();
+    if (
+      lowerText === 'add image alt text' ||
+      lowerText === 'describe the image' ||
+      lowerText === 'add from pixabay' ||
+      lowerText === 'upload' ||  // Only exact match "Upload" button text
+      lowerText === 'clear alt text' ||
+      lowerText.includes('drag and drop an image here')
+    ) {
+      $(this).remove();
     }
-  });
+  }
+});
 
   $("svg, button, [aria-label]").each(function () {
     const aria = ($(this).attr('aria-label') || '').toLowerCase();
