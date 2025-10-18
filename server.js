@@ -71,17 +71,22 @@ function removeSurferEditorUIMarkup(html) {
     }
   });
 
+  // FIXED VERSION - Only remove UI elements, not content
   $("span, p, label, button").each(function () {
-    const t = $(this).text().toLowerCase();
-    if (
-      t.includes('add image alt text') ||
-      t.includes('describe the image') ||
-      t.includes('add from pixabay') ||
-      t.includes('upload') ||
-      t.includes('clear alt text') ||
-      t.includes('drag and drop an image here')
-    ) {
-      $(this).remove();
+    const t = $(this).text().trim();
+    // Only remove if it's a SHORT text snippet that EXACTLY matches UI patterns
+    if (t.length < 100) {  // Content paragraphs are usually longer
+      const lowerText = t.toLowerCase();
+      if (
+        lowerText === 'add image alt text' ||
+        lowerText === 'describe the image' ||
+        lowerText === 'add from pixabay' ||
+        lowerText === 'upload' ||  // Only exact match "Upload" button text
+        lowerText === 'clear alt text' ||
+        lowerText.includes('drag and drop an image here')
+      ) {
+        $(this).remove();
+      }
     }
   });
 
