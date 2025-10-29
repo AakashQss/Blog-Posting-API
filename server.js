@@ -17,11 +17,13 @@ app.use(express.json());
 
 const upload = multer({ dest: "uploads/" });
 
-const ODOO_URL = "https://my-shop39.odoo.com/";
-const ODOO_DB = "my-shop39";
-const ODOO_USERNAME = "aakash.sharma.qss@gmail.com";
-const ODOO_PASSWORD = "testingapiodoo";
-const ODOO_BLOG_ID = 1;
+// const ODOO_URL =
+// const ODOO_DB = 
+// const ODOO_USERNAME =
+// const ODOO_PASSWORD = 
+// const ODOO_BLOG_ID =
+
+
 
 const keysFile = path.join(__dirname, "auth_keys.json");
 let AUTH_KEYS = {};
@@ -327,8 +329,8 @@ async function upsertBlogInOdoo(title, html, bannerBase64 = null, blogId) {
               });
               console.log("🖼️ Added banner image to blog cover_properties");
             } else {
-              blogData.cover_properties = "{}";
-              console.log("🧹 Removed banner image from cover_properties");
+              // ✅ Don't set cover_properties if no banner - preserves existing banner
+              console.log("ℹ️ No banner provided - existing banner will be preserved on update");
             }
 
             console.log("📝 Blog data keys:", Object.keys(blogData));
